@@ -1,5 +1,5 @@
 import pytest
-from models.shoe import Shoe
+from model.shoe import Shoe
 from exceptions.shoe_exceptions import PenetrationNotReachedError
 
 def test_shoe_initialization():

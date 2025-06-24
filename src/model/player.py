@@ -1,8 +1,11 @@
 from utils.logger import logger
 from exceptions.player_exceptions import NegativeBankrollError
+from strategy.basic_strategy import BasicStrategy
+from model.player_hand import PlayerHand
+from enums.decisions import PlayerDecision
 
 class Player:
-    def __init__(self, bankroll : int, spread : int = 1,  betting_unit : int = 1, use_deviations : bool = False, accuracy : float = 1, min_max : bool = False, max_splits : int = 4):
+    def __init__(self, bankroll : int, spread : int = 1,  betting_unit : int = 1, use_deviations : bool = False, accuracy : float = 1, min_max : bool = False, max_splits : int = 4, s17 = True):
         self.initial_bankroll = bankroll
         self.bankroll = bankroll
         if self.bankroll <= 0:
@@ -13,6 +16,11 @@ class Player:
         self.min_max = min_max
         self.max_splits = max_splits
         self.ruin = False
+
+        if use_deviations:
+            pass
+        else:
+            self.strategy = BasicStrategy(s17)
 
     
     def place_bet(self, true_count : int):
@@ -29,6 +37,10 @@ class Player:
             raise NegativeBankrollError(self.bankroll)
         return bet
     
-    # def make_decision(self, hand : "Hand" true_count : int):
-
+    def get_correct_action(self, player_hand : PlayerHand, dealer_up_card : int,  true_count : int):
+        return self.strategy.pick_action(player_hand, dealer_up_card, true_count)
+    
+    def get_take_insurance(self, dealer_upcard : int , deviations : bool = False, true_count : int = 0):
+        if dealer_upcard == 11 and deviations and true_count >= 3:
+            return True
         
