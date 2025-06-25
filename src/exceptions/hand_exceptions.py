@@ -15,15 +15,15 @@ class DrawError(BlackjackError):
 
 class SurrenderWithMoreThanTwoCardsError(BlackjackError):
     def __init__(self, n_of_cards : int):
-        super().__init__(f"The hand with {n_of_cards} was mistakenly labeled as being able to surrender")
+        super().__init__(f"The hand with {n_of_cards} card was mistakenly labeled as being able to surrender")
 
 class DoubleWithMoreThanTwoCardsError(BlackjackError):
     def __init__(self, n_of_cards : int):
-        super().__init__(f"The hand with {n_of_cards} was mistakenly labeled as being able to double")
+        super().__init__(f"The hand with {n_of_cards} card was mistakenly labeled as being able to double")
 
 class SplitWithMoreThanTwoCardsError(BlackjackError):
     def __init__(self, n_of_cards : int):
-        super().__init__(f"The hand with {n_of_cards} was mistakenly labeled as being able to split")
+        super().__init__(f"The hand with {n_of_cards} card was mistakenly labeled as being able to split")
 
 class SplitWithTwoDifferentCardsError(BlackjackError):
     def __init__(self, card1: int, card2 : int):
@@ -38,3 +38,6 @@ class NoActionChosenError(BlackjackError):
         super().__init__(f"No action was choses for player hand : {player_hand_cards} and dealer upcard: {dealer_up_card}")
 
     
+class GetUpCardError(BlackjackError):
+    def __init__(self, n_cards : int):
+            super().__init__(f"Tried to peek on the dealers upcard while he has {n_cards} cards")

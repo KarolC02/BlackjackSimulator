@@ -14,4 +14,11 @@ class DealerHand(Hand):
         else:
             return DealerDecision.STAND
         
+    def get_upcard(self):
+        # This method is to be called only when the dealer has 1 card
+        if not len(self.cards == 1):
+            raise GetUpCardError(len(self.cards))
+        
+        return self.cards[0]
+        
         

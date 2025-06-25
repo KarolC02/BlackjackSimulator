@@ -37,8 +37,34 @@ class Player:
             raise NegativeBankrollError(self.bankroll)
         return bet
     
-    def get_correct_action(self, player_hand : PlayerHand, dealer_up_card : int,  true_count : int):
-        return self.strategy.pick_action(player_hand, dealer_up_card, true_count)
+    def place_double_bet(self, bet : int):
+        # TODO - Betting system
+
+        if self.bankroll <= bet:
+            logger.info(f"Player is ruined with bankroll: {self.bankroll}")
+            self.ruined = True
+            return 0
+        
+        self.bankroll -= bet
+        if self.bankroll <= 0:
+            raise NegativeBankrollError(self.bankroll)
+        return bet
+    
+    def place_insurance_bet(self, bet : int):
+        # TODO - Betting system
+
+        if self.bankroll <= bet:
+            logger.info(f"Player is ruined with bankroll: {self.bankroll}")
+            self.ruined = True
+            return 0
+        
+        self.bankroll -= bet
+        if self.bankroll <= 0:
+            raise NegativeBankrollError(self.bankroll)
+        return bet
+    
+    def get_correct_action(self, player_hand : PlayerHand, dealer_up_card : int,  true_count : int, surrender_avaiable : bool = True):
+        return self.strategy.pick_action(player_hand, dealer_up_card, true_count, surrender_avaiable)
     
     def get_take_insurance(self, dealer_upcard : int , deviations : bool = False, true_count : int = 0):
         if dealer_upcard == 11 and deviations and true_count >= 3:
