@@ -41,7 +41,7 @@ class Player:
         # TODO - Betting system
 
         if self.bankroll <= bet:
-            logger.info(f"Player is ruined with bankroll: {self.bankroll}")
+            logger.info(f"Player can't double as he is ruined with bankroll: {self.bankroll}, and she's trying to double for {self.bet}")
             self.ruined = True
             return 0
         

@@ -8,7 +8,7 @@ class BasicStrategy():
     def __init__(self, s17 : bool = True):
         self.s17 = s17
 
-    def pick_action(self, player_hand : PlayerHand, dealer_up_card : int,  true_count : int = 0, surrender_available : bool = True):
+    def pick_action(self, player_hand : PlayerHand, dealer_up_card : int,  true_count : int = 0, surrender_available : bool = True, split_available = True):
         #############################################################
         ######################### Surrender #########################
         #############################################################
@@ -34,7 +34,7 @@ class BasicStrategy():
         #############################################################
         #########################   Splits  #########################
         #############################################################
-        if player_hand.is_splittable():
+        if player_hand.is_splittable() and split_available:
             if not player_hand.length() == 2:
                 raise SplitWithMoreThanTwoCardsError(player_hand.length())
             if player_hand.cards[0] != player_hand.cards[1]:

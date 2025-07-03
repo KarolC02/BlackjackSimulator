@@ -1,5 +1,6 @@
 from model.hand import Hand
 from enums.decisions import DealerDecision
+from exceptions.hand_exceptions import GetUpCardError
 
 class DealerHand(Hand):
     def __init__(self, s17 : bool = True):
