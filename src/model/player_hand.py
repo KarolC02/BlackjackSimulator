@@ -48,7 +48,6 @@ class PlayerHand(Hand):
 
         return value
 
-
     def add_bet(self, additional_bet : int):
         self.bet += additional_bet
 
@@ -64,6 +63,9 @@ class PlayerHand(Hand):
     def is_bust(self):
         return self.get_value() > 21
     
+    def surrender_hand(self) -> None:
+        self.is_surrendered = True
+
     def disable_surrender(self):
         self.can_surrender = False
 

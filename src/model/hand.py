@@ -18,7 +18,7 @@ class Hand:
     def is_bust(self):
         return self.get_value() > 21
 
-    def is_black_jack(self):
+    def is_blackjack(self):
         return len(self.cards) == 2 and 11 in self.cards and 10 in self.cards and not self.is_split_hand
     
     def is_soft(self):

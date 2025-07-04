@@ -15,7 +15,7 @@ def test_blackjack_11_10():
     hand.initial_draw(11)
     assert hand.get_value() == 21
     assert not hand.is_bust()
-    assert hand.is_black_jack()
+    assert hand.is_blackjack()
 
 def test_blackjack_10_11():
     hand = PlayerHand()
@@ -23,7 +23,7 @@ def test_blackjack_10_11():
     hand.initial_draw(10)
     assert hand.get_value() == 21
     assert not hand.is_bust()
-    assert hand.is_black_jack()
+    assert hand.is_blackjack()
 
 def test_11_11():
     hand = PlayerHand()
@@ -49,7 +49,7 @@ def test_10_6_5():
     hand.draw(5)
     assert hand.get_value() == 21
     assert not hand.is_bust()
-    assert not hand.is_black_jack()
+    assert not hand.is_blackjack()
 
 
 def test_5_5_11():
@@ -59,7 +59,7 @@ def test_5_5_11():
     hand.draw(11)
     assert hand.get_value() == 21
     assert not hand.is_bust()
-    assert not hand.is_black_jack()
+    assert not hand.is_blackjack()
 
 def test_11_5_5_11():
     hand = PlayerHand()

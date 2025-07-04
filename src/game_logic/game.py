@@ -4,7 +4,7 @@ from model.player_hand import PlayerHand
 from model.shoe import Shoe
 from utils.logger import logger
 from enums.decisions import PlayerDecision, DealerDecision
-from exceptions.game_exceptions import SurrenderNotAvailableError, SplitIntoMoreThanFiveHandsError, SplitTwoDifferenCardsChoiceError, HandCountMismatchError
+from exceptions.game_exceptions import SurrenderNotAvailableError, SplitIntoMoreThanFiveHandsError, SplitTwoDifferenCardsChoiceError, HandCountMismatchError, InsuranceTakenWithNoDealerAceError
 
 class Game():
     def __init__(self, player_bankroll : int = 10000, player_betting_unit : int = 30, use_deviations : bool = False, nPlayers : int = 1, s17 : bool = True, blackjack_pays : float = 1.5, n_decks : int = 6, penetration : float = 0.75):
@@ -18,53 +18,63 @@ class Game():
         self.shoes_played = 0
 
         # Reset each round
-        self.player_initial_hand = []
-        self.dealer_hand = DealerHand()
-        self.hands_to_resolve = []
-        self.hands_to_play = []
-        self.hands_count = 0
-        self.split_available = True
-        self.surrender_available = True
-        self.take_insurance = False
-        self.insurance_bet = 0
+        self.reset_round()
 
 
     def play_rounds(self, rounds : int = 100):
-        
-
         while self.hands_played < rounds:
+            self.play_round()
 
-            self.reshuffle_shoe_if_needed()
-            self.reset_round()
-            self.deal_initial_cards()
-            self.decide_on_insurance()
+    def play_round(self):
+        self.reshuffle_shoe_if_needed()
+        self.reset_round()
+        self.deal_initial_cards()
+        self.decide_on_insurance()
+        while len(self.hands_to_play) > 0:
+            hand_to_play = self.hands_to_play.pop()
+            self.play_hand(hand_to_play, self.dealer_hand.get_upcard())
 
-                    
-            # Blackjack Handling:
-            if self.player_initial_hand.is_black_jack():
-                # get the original bet back
-                self.player.bankroll += self.player_initial_hand.get_bet()
-                if self.dealer_hand.get_upcard() in {10,11}:
-                    self.dealer_hand.draw(self.shoe.deal_card())
-                    if self.dealer_hand.is_black_jack():
-                        return
-                self.player.bankroll += self.blackjack_pays * self.player_initial_hand.get_bet()
+        self.resolve_bets()
+        self.hands_played += 1
+        self.reset_round()
 
-            else:
-                while len(self.hands_to_play) > 0:
-                    hand_to_play = self.hands_to_play.pop()
-                    self.play_hand(hand_to_play, self.dealer_hand.get_upcard())
-
-
-            # TODO - resolve hands
-            if len(self.hands_to_resolve) != self.hands_played:
+    
+    def resolve_bets(self) -> None:
+        if len(self.hands_to_resolve) != self.hands_played:
                 raise HandCountMismatchError(self.hands_to_resolve, self.hands_played)
-
-
-            self.resolve_bets()
-
-            self.hands_played += 1
         
+        # Handle Insurance
+        if self.dealer_hand.is_blackjack():
+            # Handle Insurance
+            if self.insurance_bet > 0:
+                if self.dealer_hand[0] != 11:
+                    raise InsuranceTakenWithNoDealerAceError
+                self.player.win_insurance_bet(self.insurance_bet)
+
+        for hand in self.hands_to_resolve:
+            # Surrender
+            if hand.is_surrendered():
+                self.player.resolve_surrender_bet(hand)
+            # BlackJack
+            elif hand.is_blackjack():
+                if not self.dealer_hand.is_blackjack():
+                    self.player.win_blackjack_hand(hand, self.blackjack_pays)
+                else:
+                    self.player.get_original_bet_back(hand)
+            # Bust
+            elif hand.is_bust(): # The best is already taken from the player
+                continue
+            # Player vs Dealer
+            else:
+                if self.dealer_hand.is_blackjack():
+                    assert not hand.is_blackjack(), "The situation in which the player and the dealer has blackjack should have been resolved earlier"
+                    continue # The player pays the best as the cards are dealt, no need to do anything if the player loses
+                if self.dealer_hand.get_value() == hand.get_value():
+                    self.player.get_original_bet_back(hand)
+                if hand.get_value() > self.dealer_hand.get_value():
+                    self.player.win_hand(hand)
+                else: # self.dealer_hand.get_value() < hand.get_value()
+                    continue
 
     def play_hand(self, hand : PlayerHand, dealer_up_card : int):
 
@@ -85,7 +95,7 @@ class Game():
             if player_decision == PlayerDecision.SURRENDER:
                 if not self.surrender_available:
                     raise SurrenderNotAvailableError()
-                hand.is_surrendered = True
+                hand.surrender_hand()
                 self.hands_to_resolve.add(hand)
                 return
             
@@ -141,15 +151,15 @@ class Game():
             self.shoe.shuffle()
 
     def reset_round(self) -> None:
-        self.player_initial_hand = []
-        self.dealer_hand = []
-        self.hands_to_resolve = []
-        self.hands_to_play = []
-        self.hands_count = 0
-        self.split_available = True
-        self.surrender_available = True
-        self.take_insurance = False
-        self.insurance_bet = 0
+        self.player_initial_hand : PlayerHand = PlayerHand()
+        self.dealer_hand : DealerHand = DealerHand()
+        self.hands_to_resolve : list[PlayerHand] = [PlayerHand]
+        self.hands_to_play : list[PlayerHand] = [PlayerHand]
+        self.hands_count : int = 0
+        self.split_available : bool = True
+        self.surrender_available : bool = True
+        self.take_insurance : bool = False
+        self.insurance_bet : int = 0
 
 
 
@@ -173,4 +183,4 @@ class Game():
         # Insurance?
         take_insurance = self.player.get_take_insurance(self.dealer_hand.get_upcard(), self.use_deviations, self.shoe.get_true_count())
         if take_insurance:
-            self.insurance_bet = self.player.place_insurance_bet()
+            self.insurance_bet = self.player.place_insurance_bet(self.player_initial_hand)
