@@ -33,7 +33,7 @@ class Shoe:
             raise PenetrationNotReachedError(self.get_current_penetration(), self.penetration)
 
         self.create_shoe()
-        assert len(self.shoe == self.decks * 52)
+        assert len(self.shoe) == self.n_decks * 52
 
     def needs_reshuffling(self):
         return self.get_current_penetration() >= self.penetration
@@ -54,5 +54,6 @@ class Shoe:
 
 
         
+
 
 

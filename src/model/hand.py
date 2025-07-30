@@ -1,4 +1,5 @@
 from exceptions.hand_exceptions import GetValueError
+from utils.logger import logger
 
 class Hand:
     def __init__(self):
@@ -6,6 +7,7 @@ class Hand:
         
     def draw(self, card : int):
         self.cards.append(card)
+        logger.info(f"X draws initially a {card}")
 
     def get_value(self) -> int:
         value = sum(self.cards)

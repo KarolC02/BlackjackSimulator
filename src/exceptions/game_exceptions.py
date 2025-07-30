@@ -16,6 +16,6 @@ class HandCountMismatchError(BlackjackError):
     def __init__(self, len_hands_to_resolve : int, hands_count : int):
         super().__init__(f"Length of hands_to_resolve is {len_hands_to_resolve}, but the hands_count is {hands_count}")
 
-class InsuranceTakenWithNoDealerAce(BlackjackError):
+class InsuranceTakenWithNoDealerAceError(BlackjackError):
     def __init__(self):
         super().__init__(f"Player took insurance while the dealer's upcard was different than 11")

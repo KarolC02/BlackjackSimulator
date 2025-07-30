@@ -12,9 +12,11 @@ class PlayerHand(Hand):
         self.bet = bet
         self.is_surrendered = False
 
+
     def initial_draw(self, initial_card : int ):
         
         self.cards.append(initial_card)
+        print(self.cards)
         if len(self.cards) != 1 and len(self.cards) != 2:
             raise InitialDrawError(len(self.cards))
         logger.info(f"Player draws initially a {initial_card}")

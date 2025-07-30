@@ -25,13 +25,17 @@ class Player:
     
     def place_bet(self, true_count : int):
         # TODO - Betting system
-        bet = self.get_bet(self,true_count)
 
+        if true_count <= 1:
+            bet = self.betting_unit
+        else:
+            bet = self.betting_unit
+    
         if self.bankroll <= bet:
             logger.info(f"Player is ruined with bankroll: {self.bankroll}")
             self.ruined = True
             return 0
-        
+
         self.bankroll -= bet
         if self.bankroll <= 0:
             raise NegativeBankrollError(self.bankroll)

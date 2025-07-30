@@ -8,7 +8,7 @@ from exceptions.game_exceptions import SurrenderNotAvailableError, SplitIntoMore
 
 class Game():
     def __init__(self, player_bankroll : int = 10000, player_betting_unit : int = 30, use_deviations : bool = False, nPlayers : int = 1, s17 : bool = True, blackjack_pays : float = 1.5, n_decks : int = 6, penetration : float = 0.75):
-        self.player = Player(bankrol = player_bankroll, betting_unit = player_betting_unit)
+        self.player = Player(bankroll = player_bankroll, betting_unit = player_betting_unit)
         self.shoe = Shoe(n_decks = n_decks, penetration=penetration)
         self.initial_player_bankroll = player_bankroll
         self.player_betting_unit = player_betting_unit
@@ -19,6 +19,17 @@ class Game():
 
         # Reset each round
         self.reset_round()
+
+    def reset_round(self) -> None:
+        self.player_initial_hand : PlayerHand = PlayerHand()
+        self.dealer_hand : DealerHand = DealerHand()
+        self.hands_to_resolve : list[PlayerHand] = list()
+        self.hands_to_play : list[PlayerHand] = list()
+        self.hands_count : int = 0
+        self.split_available : bool = True
+        self.surrender_available : bool = True
+        self.take_insurance : bool = False
+        self.insurance_bet : int = 0
 
 
     def play_rounds(self, rounds : int = 100):
@@ -83,9 +94,9 @@ class Game():
         if len(hand.cards) == 1:
             if hand.cards[0] != 11:
                 hand.draw(self.shoe.deal_card())
-            else: # If it's an ace after splitting, draw just one cards
+            else: # If it's an ace after splitting, draw just one card
                 hand.draw_and_disable(self.shoe.deal_card())
-                self.hands_to_resolve.add(hand)
+                self.hands_to_resolve.append(hand)
                 return
 
 
@@ -96,7 +107,7 @@ class Game():
                 if not self.surrender_available:
                     raise SurrenderNotAvailableError()
                 hand.surrender_hand()
-                self.hands_to_resolve.add(hand)
+                self.hands_to_resolve.append(hand)
                 return
             
             elif player_decision == PlayerDecision.SPLIT:
@@ -115,8 +126,8 @@ class Game():
                 self.surrender_available = False
                 new_hand2.initial_draw(hand.cards[1])
 
-                self.player_hands.add(new_hand1)
-                self.player_hands.add(new_hand2)
+                self.player_hands.append(new_hand1)
+                self.player_hands.append(new_hand2)
 
                 hands += 1
 
@@ -129,18 +140,18 @@ class Game():
                 self.surrender_available = False
                 hand.add_bet(self.player.place_double_bet(hand.get_bet()))
                 hand.draw_and_disable(self.shoe.deal_card())
-                self.hands_to_resolve.add(hand)
+                self.hands_to_resolve.append(hand)
                 return
 
             elif player_decision == PlayerDecision.HIT:
                 self.surrender_available = False
                 hand.draw(self.shoe.deal_card())
                 if hand.is_bust():
-                    self.hands_to_resolve.add(hand)
+                    self.hands_to_resolve.append(hand)
                     return
 
             elif player_decision == PlayerDecision.STAND:
-                self.hands_to_resolve.add(hand)
+                self.hands_to_resolve.append(hand)
                 return
         
 
@@ -150,22 +161,9 @@ class Game():
             logger.info(f"Shoe Finished! Total shoes played : {self.shoes_played}")
             self.shoe.shuffle()
 
-    def reset_round(self) -> None:
-        self.player_initial_hand : PlayerHand = PlayerHand()
-        self.dealer_hand : DealerHand = DealerHand()
-        self.hands_to_resolve : list[PlayerHand] = [PlayerHand]
-        self.hands_to_play : list[PlayerHand] = [PlayerHand]
-        self.hands_count : int = 0
-        self.split_available : bool = True
-        self.surrender_available : bool = True
-        self.take_insurance : bool = False
-        self.insurance_bet : int = 0
-
-
-
     def deal_initial_cards(self) -> None:
         # Player places bet
-        player_bet = self.player.place_bet()
+        player_bet = self.player.place_bet(self.shoe.get_true_count())
 
 
         player_hand = PlayerHand(player_bet)
@@ -173,11 +171,11 @@ class Game():
 
         # Initial Draw
         player_hand.initial_draw(self.shoe.deal_card())
-        dealer_hand.draw(self.shoe.deal_card())
+        self.dealer_hand.draw(self.shoe.deal_card())
         player_hand.initial_draw(self.shoe.deal_card())
 
-        self.hands_to_resolve.add(player_hand)
-        hands += 1
+        self.hands_to_play.append(player_hand)
+        self.hands_count += 1
 
     def decide_on_insurance(self) -> None:
         # Insurance?

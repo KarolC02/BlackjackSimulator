@@ -1,6 +1,7 @@
 from model.hand import Hand
 from enums.decisions import DealerDecision
 from exceptions.hand_exceptions import GetUpCardError
+from utils.logger import logger
 
 class DealerHand(Hand):
     def __init__(self, s17 : bool = True):
@@ -15,9 +16,13 @@ class DealerHand(Hand):
         else:
             return DealerDecision.STAND
         
+    def draw(self, card : int):
+        self.cards.append(card)
+        logger.info(f"Dealer draws initially a {card}")
+        
     def get_upcard(self):
         # This method is to be called only when the dealer has 1 card
-        if not len(self.cards == 1):
+        if not len(self.cards) == 1:
             raise GetUpCardError(len(self.cards))
         
         return self.cards[0]
